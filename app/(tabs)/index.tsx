@@ -1,98 +1,136 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import ActionButtons from "@/components/ActionButtons";
+import FeedbackCard from "@/components/FeedbackCard";
+import LikedOverlay from "@/components/LikedOverlay";
+import { useApi } from "@/lib/api";
+import i18n from "@/lib/i18n";
+import { useAuth } from "@clerk/expo";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+type Feedback = {
+  _id: string;
+  text: string;
+  isLiked: boolean;
+};
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const insets = useSafeAreaInsets();
+  const { isLoaded } = useAuth();
+  const api = useApi();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [likedFeedbacks, setLikedFeedbacks] = useState<Feedback[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showLiked, setShowLiked] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (isLoaded) {
+      fetchFeedbacks();
+      fetchLikedFeedbacks();
+    }
+  }, [isLoaded]);
+
+  const fetchFeedbacks = async () => {
+    try {
+      setLoading(true);
+      const data = await api.getMyFeedbacks();
+      setFeedbacks(data.data);
+    } catch (err) {
+      console.error("Failed to load feedbacks:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchLikedFeedbacks = async () => {
+    try {
+      const data = await api.getLikedFeedbacks();
+      setLikedFeedbacks(data.data);
+    } catch (err) {
+      console.error("Failed to load liked feedbacks:", err);
+    }
+  };
+
+  const handleLike = async () => {
+    const feedback = feedbacks[currentIndex];
+    setCurrentIndex(prev => prev + 1);
+    try {
+      await api.toggleLikeFeedback(feedback._id);
+      const data = await api.getLikedFeedbacks();
+      setLikedFeedbacks(data.data);
+    } catch (err) {
+      console.error("Failed to like feedback:", err);
+    }
+  };
+
+  const handleDelete = async () => {
+    const feedback = feedbacks[currentIndex];
+    setCurrentIndex(prev => prev + 1);
+    try {
+      await api.deleteFeedback(feedback._id);
+    } catch (err) {
+      console.error("Failed to delete feedback:", err);
+    }
+  };
+
+  const currentFeedback = feedbacks[currentIndex];
+  const isFinished = currentIndex >= feedbacks.length;
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-black justify-center items-center">
+        <ActivityIndicator size="large" color="#1DB954" />
+      </View>
+    );
+  }
+
+  return (
+    <View
+      className="flex-1 bg-black"
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+    >
+      {/* Header */}
+      <View className="flex-row justify-between items-center px-6 py-4">
+        <Text className="text-white text-2xl font-bold tracking-wider">
+          {i18n.t("appName")}
+        </Text>
+        <TouchableOpacity
+          onPress={() => setShowLiked(true)}
+          className="bg-[#1a1a1a] px-4 py-2 rounded-full border border-[#282828]"
+        >
+          <Text className="text-white text-sm font-semibold">{i18n.t("liked")}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Liked Overlay */}
+      {showLiked && (
+        <LikedOverlay
+          likedFeedbacks={likedFeedbacks}
+          onClose={() => setShowLiked(false)}
+          onUnlike={(id) => setLikedFeedbacks(prev => prev.filter(f => f._id !== id))}
+        />
+      )}
+
+      {/* Feed */}
+      {isFinished ? (
+        <View className="flex-1 justify-center items-center gap-4">
+          <Text className="text-5xl">🎉</Text>
+          <Text className="text-white text-lg font-bold">{i18n.t("allCaughtUp")}</Text>
+          <Text className="text-[#b3b3b3] text-sm text-center px-10">
+            {i18n.t("noMoreWhispas")}
+          </Text>
+        </View>
+      ) : (
+        <View className="flex-1 justify-center items-center px-6">
+          <Text className="text-[#b3b3b3] text-sm mb-6">
+            {currentIndex + 1} / {feedbacks.length}
+          </Text>
+          <FeedbackCard text={currentFeedback.text} />
+          <ActionButtons onLike={handleLike} onDelete={handleDelete} />
+        </View>
+      )}
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

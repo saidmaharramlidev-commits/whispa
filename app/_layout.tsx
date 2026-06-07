@@ -1,24 +1,48 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import "@/global.css";
+import { LanguageProvider } from "@/lib/LanguageContext";
+import { ClerkProvider, useAuth } from '@clerk/expo';
+import { tokenCache } from '@clerk/expo/token-cache';
+import { Slot, router, useSegments } from 'expo-router';
+import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+if (!publishableKey) {
+  throw new Error('Add your Clerk Publishable Key to the .env file')
+}
+
+function InitialLayout() {
+  const { isSignedIn, isLoaded } = useAuth()
+  const segments = useSegments()
+
+  useEffect(() => {
+    if (!isLoaded) return
+    const inAuthGroup = segments[0] === '(auth)'
+    if (isSignedIn && inAuthGroup) {
+      router.replace('/(tabs)')
+    } else if (!isSignedIn && !inAuthGroup) {
+      router.replace('/(auth)/sign-in' as any)
+    }
+  }, [isSignedIn, isLoaded, segments])
+
+  if (!isLoaded) {
+    return (
+      <View className="flex-1 bg-black justify-center items-center">
+        <ActivityIndicator size="large" color="#1DB954" />
+      </View>
+    )
+  }
+
+  return <Slot />
+}
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+      <LanguageProvider>
+        <InitialLayout />
+      </LanguageProvider>
+    </ClerkProvider>
+  )
 }
