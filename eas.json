@@ -5,7 +5,10 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EAS_BUILD_NPM_FLAGS": "--legacy-peer-deps"
+      }
     },
     "preview": {
       "distribution": "internal",
