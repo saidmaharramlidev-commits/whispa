@@ -1,10 +1,22 @@
 import "@/global.css";
 import { LanguageProvider } from "@/lib/LanguageContext";
+import { NotificationProvider, useNotification } from "@/lib/NotificationContext";
+import { useApi } from "@/lib/api";
 import { ClerkProvider, useAuth } from '@clerk/expo';
 import { tokenCache } from '@clerk/expo/token-cache';
+import * as Notifications from "expo-notifications";
 import { Slot, router, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!
 
@@ -15,7 +27,10 @@ if (!publishableKey) {
 function InitialLayout() {
   const { isSignedIn, isLoaded } = useAuth()
   const segments = useSegments()
+  const { expoPushToken } = useNotification()
+  const api = useApi()
 
+  // auth redirect
   useEffect(() => {
     if (!isLoaded) return
     const inAuthGroup = segments[0] === '(auth)'
@@ -25,6 +40,14 @@ function InitialLayout() {
       router.replace('/(auth)/sign-in' as any)
     }
   }, [isSignedIn, isLoaded, segments])
+
+  // save push token to backend when signed in
+  useEffect(() => {
+    if (!isSignedIn || !expoPushToken) return
+    api.updateMe({ pushToken: expoPushToken })
+      .then(() => console.log("✅ Push token saved"))
+      .catch(err => console.error("❌ Failed to save push token:", err))
+  }, [isSignedIn, expoPushToken])
 
   if (!isLoaded) {
     return (
@@ -40,9 +63,11 @@ function InitialLayout() {
 export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      <LanguageProvider>
-        <InitialLayout />
-      </LanguageProvider>
+      <NotificationProvider>
+        <LanguageProvider>
+          <InitialLayout />
+        </LanguageProvider>
+      </NotificationProvider>
     </ClerkProvider>
   )
 }

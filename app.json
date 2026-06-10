@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Whispa",
-    "slug": "whispa",
+    "slug": "Whispa",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/Logo.png",
@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.said.whispa"
     },
     "android": {
       "adaptiveIcon": {
@@ -20,10 +21,15 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "versionCode": 1,
-      "package": "com.said.whispa"
+      "googleServicesFile": "./google-services.json",
+      "package": "com.said.whispa",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       "expo-router",
+      "expo-notifications",
       [
         "expo-splash-screen",
         {
