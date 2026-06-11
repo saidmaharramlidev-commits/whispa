@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.said.whispa"
+      "bundleIdentifier": "com.whispa.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +22,7 @@
       "predictiveBackGestureEnabled": false,
       "versionCode": 1,
       "googleServicesFile": "./google-services.json",
-      "package": "com.said.whispa",
+      "package": "com.whispa.app",
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ]
