@@ -1,4 +1,5 @@
 import UserCardFollow from "@/components/UserCardFollow";
+import { useApi } from "@/lib/api";
 import i18n from "@/lib/i18n";
 import { useUser } from "@clerk/expo";
 import { FlatList, Modal, Text, TouchableOpacity, View } from "react-native";
@@ -17,11 +18,25 @@ type Props = {
     currentUserFollowing: string[];
     onClose: () => void;
     onFollowToggle?: () => void;
+    onRefresh?: () => void;
+    onRemoveFollower?: (username: string) => void;
 };
 
-export default function FollowListModal({ visible, type, users, currentUserFollowing, onClose, onFollowToggle }: Props) {
+export default function FollowListModal({ visible, type, users, currentUserFollowing, onClose, onFollowToggle, onRefresh, onRemoveFollower }: Props) {
     const insets = useSafeAreaInsets();
     const { user: clerkUser } = useUser();
+    const api = useApi();
+
+    const handleRemoveFollower = async (username: string) => {
+        try {
+            onRemoveFollower?.(username) // ← remove locally first
+            await api.removeFollower(username);
+            onRefresh?.();
+        } catch (err) {
+            console.error("Failed to remove follower:", err);
+            onRefresh?.(); // restore if failed
+        }
+    };
 
     return (
         <Modal
@@ -67,17 +82,33 @@ export default function FollowListModal({ visible, type, users, currentUserFollo
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: insets.bottom + 80 }}
                         renderItem={({ item }) => (
-                            <UserCardFollow
-                                user={{
-                                    ...item,
-                                    avatarUrl: "",
-                                    isFollowing: currentUserFollowing.some(
-                                        (id: any) => id.toString() === item._id.toString()
-                                    ),
-                                }}
-                                onClose={onClose}
-                                onFollowToggle={onFollowToggle}
-                            />
+                            <View className="flex-row items-center">
+                                <View className="flex-1">
+                                    <UserCardFollow
+                                        user={{
+                                            ...item,
+                                            avatarUrl: "",
+                                            isFollowing: currentUserFollowing.some(
+                                                (id: any) => id.toString() === item._id.toString()
+                                            ),
+                                        }}
+                                        onClose={onClose}
+                                        onFollowToggle={onFollowToggle}
+                                    />
+                                </View>
+
+                                {/* Remove button only on followers tab */}
+                                {type === "followers" && (
+                                    <TouchableOpacity
+                                        onPress={() => handleRemoveFollower(item.username)}
+                                        className="bg-[#1a1a1a] border border-[#282828] px-3 py-2 rounded-full ml-2"
+                                    >
+                                        <Text className="text-red-500 text-xs font-semibold">
+                                            {i18n.t("remove")}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         )}
                     />
                 )}

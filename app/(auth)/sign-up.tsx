@@ -2,7 +2,7 @@ import i18n from "@/lib/i18n";
 import { useAuth, useSignUp } from "@clerk/expo";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -18,6 +18,15 @@ export default function Page() {
     const [code, setCode] = React.useState("");
     const [errorMessage, setErrorMessage] = React.useState("");
     const [showPassword, setShowPassword] = React.useState(false);
+
+    // reset any stale incomplete sign-up from a previous app session
+    useEffect(() => {
+        if (
+            signUp.status === "missing_requirements"
+        ) {
+            signUp.reset();
+        }
+    }, []);
 
     const handleSubmit = async () => {
         setErrorMessage("");
@@ -68,6 +77,15 @@ export default function Page() {
         }
     };
 
+    const handleStartOver = () => {
+        signUp.reset();
+        setEmailAddress("");
+        setPassword("");
+        setUsername("");
+        setCode("");
+        setErrorMessage("");
+    };
+
     if (signUp.status === "complete" || isSignedIn) return null;
 
     // VERIFY SCREEN
@@ -113,6 +131,13 @@ export default function Page() {
                         onPress={() => signUp.verifications.sendEmailCode()}
                     >
                         <Text className="text-[#888] text-sm">{i18n.t("resendCode")}</Text>
+                    </Pressable>
+
+                    <Pressable
+                        className="mt-3 border border-[#282828] rounded-full py-4 items-center"
+                        onPress={handleStartOver}
+                    >
+                        <Text className="text-[#888] text-sm">{i18n.t("startOver")}</Text>
                     </Pressable>
                 </View>
             </View>

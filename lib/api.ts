@@ -8,11 +8,10 @@ export const useApi = () => {
     const request = async (endpoint: string, options: RequestInit = {}) => {
         const token = await getToken();
 
-
         if (!token) {
-            throw new Error("No Clerk token found");
+            console.log("No token available for:", endpoint)
+            throw new Error("Not authenticated");
         }
-
 
         const response = await fetch(`${BASE_URL}${endpoint}`, {
             ...options,
@@ -26,12 +25,12 @@ export const useApi = () => {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.message || data.error || "Something went wrong");
+            console.log("API Error:", response.status, endpoint, JSON.stringify(data))
+            throw new Error(data.message || "Something went wrong");
         }
 
         return data;
     };
-
     // ── User ──────────────────────────────────────
     const getMe = () => request("/users/me");
     const updateMe = (body: object) => request("/users/me", {
@@ -51,6 +50,10 @@ export const useApi = () => {
         request(`/users/${username}/followers`);
     const getFollowing = (username: string) =>
         request(`/users/${username}/following`);
+    const removeFollower = (username: string) =>
+        request(`/users/${username}/remove-follower`, {
+            method: "DELETE",
+        });
 
     // ── Feedback ──────────────────────────────────
     const getMyFeedbacks = () => request("/feedbacks/me");
@@ -82,5 +85,6 @@ export const useApi = () => {
         sendFeedback,
         deleteFeedback,
         toggleLikeFeedback,
+        removeFollower
     };
 };

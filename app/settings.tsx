@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Switch, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
@@ -22,6 +22,13 @@ export default function SettingsScreen() {
     const [showFollowers, setShowFollowers] = useState(true);
     const [showFollowing, setShowFollowing] = useState(true);
     const [followersOnly, setFollowersOnly] = useState(false);
+    const [user, setUser] = useState<{ username: string; email: string } | null>(null);
+
+    // contact modal state
+    const [showContactModal, setShowContactModal] = useState(false);
+    const [contactMessage, setContactMessage] = useState("");
+    const [contactSending, setContactSending] = useState(false);
+    const [contactSent, setContactSent] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -31,6 +38,7 @@ export default function SettingsScreen() {
                 setShowFollowers(data.data.showFollowers);
                 setShowFollowing(data.data.showFollowing);
                 setFollowersOnly(data.data.followersOnly);
+                setUser({ username: data.data.username, email: data.data.email });
             } catch (err) {
                 console.error("Failed to load user settings:", err);
             } finally {
@@ -81,6 +89,52 @@ export default function SettingsScreen() {
         }
     };
 
+    const handleContact = async () => {
+        if (!contactMessage.trim()) return;
+        try {
+            setContactSending(true);
+
+            const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    service_id: process.env.EXPO_PUBLIC_EMAILJS_SERVICE_ID,
+                    template_id: process.env.EXPO_PUBLIC_EMAILJS_TEMPLATE_ID,
+                    user_id: process.env.EXPO_PUBLIC_EMAILJS_PUBLIC_KEY,
+                    accessToken: process.env.EXPO_PUBLIC_EMAILJS_PRIVATE_KEY,
+                    template_params: {
+                        name: user?.username || 'Whispa User',
+                        surname: '',
+                        email: user?.email || '',
+                        time: new Date().toLocaleString(),
+                        message: contactMessage,
+                    },
+                }),
+            });
+
+            const text = await response.text();
+
+            if (!response.ok) {
+                console.error('EmailJS failed:', text);
+                return;
+            }
+
+            setContactSent(true);
+            setContactMessage('');
+            setTimeout(() => {
+                setShowContactModal(false);
+                setContactSent(false);
+            }, 1500);
+
+        } catch (err) {
+            console.error('EmailJS error:', err);
+        } finally {
+            setContactSending(false);
+        }
+    };
+
     if (loading) {
         return (
             <View className="flex-1 bg-black justify-center items-center">
@@ -104,6 +158,7 @@ export default function SettingsScreen() {
             </View>
 
             <View className="px-6 mt-4 gap-3">
+
                 {/* Language */}
                 <TouchableOpacity
                     className="flex-row justify-between items-center bg-[#1a1a1a] border border-[#282828] rounded-2xl px-5 py-4"
@@ -111,7 +166,7 @@ export default function SettingsScreen() {
                 >
                     <View className="flex-row items-center gap-3">
                         <Ionicons name="language-outline" size={18} color="#b3b3b3" />
-                        <Text className="text-white font-semibold">Language</Text>
+                        <Text className="text-white font-semibold">{i18n.t("language")}</Text>
                     </View>
                     <Text className="text-[#b3b3b3] text-sm">
                         {locale === "en" ? "🇬🇧 English" : "🇦🇿 Azərbaycan"}
@@ -201,6 +256,15 @@ export default function SettingsScreen() {
                     />
                 </View>
 
+                {/* Contact */}
+                <TouchableOpacity
+                    onPress={() => setShowContactModal(true)}
+                    className="flex-row items-center gap-3 bg-[#1a1a1a] border border-[#282828] rounded-2xl px-5 py-4"
+                >
+                    <Ionicons name="mail-outline" size={18} color="#b3b3b3" />
+                    <Text className="text-white font-semibold">{i18n.t("contactUs")}</Text>
+                </TouchableOpacity>
+
                 {/* Sign Out */}
                 <TouchableOpacity
                     onPress={handleSignOut}
@@ -218,6 +282,69 @@ export default function SettingsScreen() {
                 </View>
 
             </View>
+
+            {/* Contact Modal */}
+            <Modal
+                visible={showContactModal}
+                animationType="slide"
+                presentationStyle="pageSheet"
+                onRequestClose={() => setShowContactModal(false)}
+            >
+                <View className="flex-1 bg-black px-6 pt-8">
+                    <View className="flex-row justify-between items-center mb-6">
+                        <Text className="text-white text-xl font-bold">{i18n.t("contactUs")}</Text>
+                        <TouchableOpacity
+                            onPress={() => {
+                                setShowContactModal(false);
+                                setContactMessage('');
+                                setContactSent(false);
+                            }}
+                            className="bg-[#1a1a1a] px-4 py-2 rounded-full border border-[#282828]"
+                        >
+                            <Text className="text-[#b3b3b3] text-sm">{i18n.t("cancel")}</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {contactSent ? (
+                        <View className="flex-1 justify-center items-center gap-4">
+                            <Text className="text-4xl">✅</Text>
+                            <Text className="text-white text-lg font-bold">{i18n.t("messageSent")}</Text>
+                        </View>
+                    ) : (
+                        <>
+                            <Text className="text-[#b3b3b3] text-sm mb-3">
+                                {i18n.t("contactDesc")}
+                            </Text>
+                            <TextInput
+                                className="bg-[#1a1a1a] text-white px-4 py-4 rounded-2xl border border-[#282828] mb-3"
+                                placeholder={i18n.t("contactPlaceholder")}
+                                placeholderTextColor="#555"
+                                value={contactMessage}
+                                onChangeText={setContactMessage}
+                                multiline
+                                numberOfLines={6}
+                                maxLength={1000}
+                                textAlignVertical="top"
+                            />
+                            <Text className="text-[#555] text-xs text-right mb-4">
+                                {contactMessage.length}/1000
+                            </Text>
+                            <Pressable
+                                onPress={handleContact}
+                                disabled={contactSending || !contactMessage.trim()}
+                                className="bg-white rounded-full py-4 items-center"
+                            >
+                                {contactSending ? (
+                                    <ActivityIndicator color="black" />
+                                ) : (
+                                    <Text className="text-black font-bold text-base">{i18n.t("send")}</Text>
+                                )}
+                            </Pressable>
+                        </>
+                    )}
+                </View>
+            </Modal>
+
         </View>
     );
 }

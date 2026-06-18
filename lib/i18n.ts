@@ -128,6 +128,21 @@ const i18n = new I18n({
 
         // Permission
         galleryPermissionRequired: "Permission to access gallery is required",
+
+        // Notification Permission Modal
+        enableNotifications: "Enable Notifications",
+        enableNotificationsDesc: "Get notified when someone sends you a whispa or starts following you.",
+        enableInSettings: "Enable in Settings",
+        notNow: "Not now",
+
+        language: "Language",
+
+        contactUs: "Contact Us",
+        contactDesc: "Have feedback or a question? Send us a message.",
+        contactPlaceholder: "Write your message...",
+        messageSent: "Message sent!",
+        tapToClose: "Tap anywhere to close",
+        remove: "Remove",
     },
 
     az: {
@@ -257,6 +272,24 @@ const i18n = new I18n({
 
         // Permission
         galleryPermissionRequired: "Qalereya icazəsi tələb olunur",
+
+        // Notification Permission Modal
+        enableNotifications: "Bildirişləri Aktiv Et",
+        enableNotificationsDesc: "Kimsə sizə whispa göndərəndə və ya sizi izləməyə başlayanda xəbər alın.",
+        enableInSettings: "Parametrlərdə Aktiv Et",
+        notNow: "İndi yox",
+
+        language: "Dil",
+
+        contactUs: "Bizimlə Əlaqə",
+        contactDesc: "Rəyiniz və ya sualınız var? Bizə mesaj göndərin.",
+        contactPlaceholder: "Mesajınızı yazın...",
+        messageSent: "Mesaj göndərildi!",
+
+        tapToClose: "Bağlamaq üçün istənilən yerə toxunun",
+        remove: "Sil",
+
+
     },
 });
 

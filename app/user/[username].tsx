@@ -35,6 +35,7 @@ export default function UserProfileScreen() {
     const [feedbackLoading, setFeedbackLoading] = useState(false);
     const [feedbackSent, setFeedbackSent] = useState(false);
     const [feedbackError, setFeedbackError] = useState("");
+    const [avatarModalVisible, setAvatarModalVisible] = useState(false);
 
     useEffect(() => {
         fetchUser();
@@ -53,6 +54,7 @@ export default function UserProfileScreen() {
             setLoading(false);
         }
     };
+
     const handleToggleFollow = async () => {
         if (!clerkUser || !user) return;
         setIsFollowing(prev => !prev);
@@ -112,6 +114,37 @@ export default function UserProfileScreen() {
 
     return (
         <View className="flex-1 bg-black" style={{ paddingTop: insets.top }}>
+
+            {/* Avatar Full Screen Modal */}
+            <Modal
+                visible={avatarModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setAvatarModalVisible(false)}
+            >
+                <TouchableOpacity
+                    className="flex-1 bg-black/90 justify-center items-center"
+                    onPress={() => setAvatarModalVisible(false)}
+                    activeOpacity={1}
+                >
+                    {user.avatarUrl ? (
+                        <Image
+                            source={{ uri: user.avatarUrl }}
+                            style={{ width: 300, height: 300, borderRadius: 150 }}
+                        />
+                    ) : (
+                        <View
+                            style={{ width: 300, height: 300, borderRadius: 150 }}
+                            className="bg-[#1a1a1a] border border-[#282828] justify-center items-center"
+                        >
+                            <Text className="text-white font-bold" style={{ fontSize: 120 }}>
+                                {user.username[0].toUpperCase()}
+                            </Text>
+                        </View>
+                    )}
+                    <Text className="text-[#555] text-sm mt-6">{i18n.t("tapToClose")}</Text>
+                </TouchableOpacity>
+            </Modal>
 
             {/* Send Whispa Modal */}
             <Modal
@@ -189,18 +222,23 @@ export default function UserProfileScreen() {
 
                         {/* Avatar */}
                         <View className="items-center mt-4 mb-6">
-                            <View className="w-24 h-24 rounded-full bg-[#1a1a1a] border border-[#282828] justify-center items-center mb-4">
-                                {user.avatarUrl ? (
-                                    <Image
-                                        source={{ uri: user.avatarUrl }}
-                                        className="w-24 h-24 rounded-full"
-                                    />
-                                ) : (
-                                    <Text className="text-white text-4xl font-bold">
-                                        {user.username[0].toUpperCase()}
-                                    </Text>
-                                )}
-                            </View>
+                            <TouchableOpacity
+                                onPress={() => setAvatarModalVisible(true)}
+                                className="mb-4"
+                            >
+                                <View className="w-24 h-24 rounded-full bg-[#1a1a1a] border border-[#282828] justify-center items-center">
+                                    {user.avatarUrl ? (
+                                        <Image
+                                            source={{ uri: user.avatarUrl }}
+                                            className="w-24 h-24 rounded-full"
+                                        />
+                                    ) : (
+                                        <Text className="text-white text-4xl font-bold">
+                                            {user.username[0].toUpperCase()}
+                                        </Text>
+                                    )}
+                                </View>
+                            </TouchableOpacity>
                             <Text className="text-white text-xl font-bold mb-1">
                                 @{user.username}
                             </Text>

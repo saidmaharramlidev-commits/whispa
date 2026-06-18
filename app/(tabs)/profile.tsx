@@ -56,6 +56,11 @@ export default function ProfileScreen() {
         }
     };
 
+    const handleRemoveFollower = (username: string) => {
+        setFollowers(prev => prev.filter(f => f.username !== username))
+    }
+
+
     const fetchFollowers = async () => {
         try {
             if (!user) return;
@@ -65,6 +70,8 @@ export default function ProfileScreen() {
             console.error("Failed to load followers:", err);
         }
     };
+
+
 
     const fetchFollowing = async () => {
         try {
@@ -91,7 +98,7 @@ export default function ProfileScreen() {
         }
 
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ["images"],
             allowsEditing: true,
             aspect: [1, 1],
             quality: 0.8,
@@ -147,6 +154,8 @@ export default function ProfileScreen() {
                 currentUserFollowing={user.following.map((f: any) => f._id ?? f)}
                 onClose={() => setModalVisible(false)}
                 onFollowToggle={fetchProfile}
+                onRefresh={fetchProfile}
+                onRemoveFollower={handleRemoveFollower}
             />
 
             <FlatList

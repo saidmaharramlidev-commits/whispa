@@ -1,5 +1,6 @@
 import { registerForPushNotificationsAsync } from "@/lib/registerForPushNotificationsAsync";
 import * as Notifications from "expo-notifications";
+import { router } from "expo-router";
 import React, {
     createContext,
     ReactNode,
@@ -13,6 +14,7 @@ interface NotificationContextType {
     devicePushToken: string | null;
     notification: Notifications.Notification | null;
     error: Error | null;
+    permissionDenied: boolean;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -30,31 +32,38 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     const [devicePushToken, setDevicePushToken] = useState<string | null>(null);
     const [notification, setNotification] = useState<Notifications.Notification | null>(null);
     const [error, setError] = useState<Error | null>(null);
+    const [permissionDenied, setPermissionDenied] = useState(false);
 
     useEffect(() => {
-        // get expo push token
         registerForPushNotificationsAsync().then(
-            (token) => setExpoPushToken(token),
+            (token) => {
+                if (token) {
+                    setExpoPushToken(token);
+                } else {
+                    setPermissionDenied(true); // ← null means denied
+                }
+            },
             (error) => setError(error),
         );
 
-        // get device push token
         Notifications.getDevicePushTokenAsync().then(
             (devicePushToken) => setDevicePushToken(devicePushToken.data),
             (error) => setError(error),
         );
 
-        // listen for notifications
         const notificationListener = Notifications.addNotificationReceivedListener(
-            (notification) => {
-                console.log("🔔 Notification Received:", notification);
-                setNotification(notification);
-            }
+            (notification) => setNotification(notification)
         );
 
         const responseListener = Notifications.addNotificationResponseReceivedListener(
             (response) => {
-                console.log("🔔 Notification Response:", response);
+                const title = response.notification.request.content.title;
+                if (title === "New Follower 🎉") {
+                    router.push("/(tabs)/profile" as any);
+                }
+                if (title === "New Whispa 💬") {
+                    router.push("/(tabs)" as any);
+                }
             }
         );
 
@@ -65,7 +74,13 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     }, []);
 
     return (
-        <NotificationContext.Provider value={{ expoPushToken, devicePushToken, notification, error }}>
+        <NotificationContext.Provider value={{
+            expoPushToken,
+            devicePushToken,
+            notification,
+            error,
+            permissionDenied
+        }}>
             {children}
         </NotificationContext.Provider>
     );
