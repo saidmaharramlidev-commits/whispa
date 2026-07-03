@@ -16,7 +16,7 @@ type Feedback = {
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { isLoaded } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
   const api = useApi();
 
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
@@ -26,11 +26,13 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && isSignedIn) {
       fetchFeedbacks();
       fetchLikedFeedbacks();
+    } else if (isLoaded && !isSignedIn) {
+      setLoading(false);
     }
-  }, [isLoaded]);
+  }, [isLoaded, isSignedIn]);
 
   const fetchFeedbacks = async () => {
     try {

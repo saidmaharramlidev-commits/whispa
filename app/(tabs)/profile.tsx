@@ -38,6 +38,7 @@ export default function ProfileScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [followers, setFollowers] = useState<FollowUser[]>([]);
     const [following, setFollowing] = useState<FollowUser[]>([]);
+    const [followLoading, setFollowLoading] = useState(false);
 
     useEffect(() => {
         if (isLoaded) fetchProfile();
@@ -86,8 +87,17 @@ export default function ProfileScreen() {
     const openModal = async (type: "followers" | "following") => {
         setModalType(type);
         setModalVisible(true);
-        if (type === "followers") await fetchFollowers();
-        else await fetchFollowing();
+        setFollowLoading(true);
+
+        try {
+            if (type === "followers") {
+                await fetchFollowers();
+            } else {
+                await fetchFollowing();
+            }
+        } finally {
+            setFollowLoading(false);
+        }
     };
 
     const handlePickImage = async () => {
@@ -151,6 +161,7 @@ export default function ProfileScreen() {
                 visible={modalVisible}
                 type={modalType}
                 users={modalType === "followers" ? followers : following}
+                loading={followLoading}
                 currentUserFollowing={user.following.map((f: any) => f._id ?? f)}
                 onClose={() => setModalVisible(false)}
                 onFollowToggle={fetchProfile}

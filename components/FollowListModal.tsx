@@ -2,7 +2,7 @@ import UserCardFollow from "@/components/UserCardFollow";
 import { useApi } from "@/lib/api";
 import i18n from "@/lib/i18n";
 import { useUser } from "@clerk/expo";
-import { FlatList, Modal, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, Modal, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type User = {
@@ -13,6 +13,7 @@ type User = {
 
 type Props = {
     visible: boolean;
+    loading: boolean;
     type: "followers" | "following";
     users: User[];
     currentUserFollowing: string[];
@@ -22,7 +23,7 @@ type Props = {
     onRemoveFollower?: (username: string) => void;
 };
 
-export default function FollowListModal({ visible, type, users, currentUserFollowing, onClose, onFollowToggle, onRefresh, onRemoveFollower }: Props) {
+export default function FollowListModal({ visible, type, users, currentUserFollowing, onClose, onFollowToggle, onRefresh, onRemoveFollower, loading }: Props) {
     const insets = useSafeAreaInsets();
     const { user: clerkUser } = useUser();
     const api = useApi();
@@ -61,14 +62,22 @@ export default function FollowListModal({ visible, type, users, currentUserFollo
                 </View>
 
                 {/* List */}
-                {users.length === 0 ? (
+                {loading ? (
+                    <View className="flex-1 justify-center items-center">
+                        <ActivityIndicator size="large" color="#1DB954" />
+                    </View>
+                ) : users.length === 0 ? (
                     <View className="flex-1 justify-center items-center gap-4">
                         <Text className="text-4xl">
                             {type === "followers" ? "👥" : "🔍"}
                         </Text>
+
                         <Text className="text-white text-lg font-bold">
-                            {type === "followers" ? i18n.t("noFollowersYet") : i18n.t("notFollowingAnyone")}
+                            {type === "followers"
+                                ? i18n.t("noFollowersYet")
+                                : i18n.t("notFollowingAnyone")}
                         </Text>
+
                         <Text className="text-[#b3b3b3] text-sm text-center px-10">
                             {type === "followers"
                                 ? i18n.t("shareProfileForFollowers")
