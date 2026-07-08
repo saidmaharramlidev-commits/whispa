@@ -4,11 +4,21 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+
+
 export default function TabsLayout() {
     const { locale } = useLanguage();
     const insets = useSafeAreaInsets();
+
+
+
+
+
+
     return (
         <Tabs
+
+
             screenOptions={{
                 headerShown: false,
                 tabBarActiveTintColor: "#fff",

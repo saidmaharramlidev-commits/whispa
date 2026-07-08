@@ -3,10 +3,10 @@ import { I18n } from "i18n-js";
 const i18n = new I18n({
     en: {
         // App
-        appName: "WHISPA",
+        appName: "WhispaMe",
         appTagline: "anonymous feedback, honestly.",
         appAnonymousBadge: "100% anonymous messages",
-        appVersion: "Whispa v",
+        appVersion: "WhispaMe v",
 
         // Auth - Sign In
         signIn: "Sign in",
@@ -147,10 +147,10 @@ const i18n = new I18n({
 
     az: {
         // App
-        appName: "WHISPA",
+        appName: "WhispaMe",
         appTagline: "anonim rəy, dürüstcə.",
         appAnonymousBadge: "100% anonim mesajlar",
-        appVersion: "Whispa v",
+        appVersion: "WhispaMe v",
 
         // Auth - Sign In
         signIn: "Daxil ol",

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Whispa",
-    "slug": "Whispa",
+    "name": "WhispaMe",
+    "slug": "WhispaMe",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/Logo.png",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.whispa.app"
+      "bundleIdentifier": "com.saidovery.whispame"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +22,7 @@
       "predictiveBackGestureEnabled": false,
       "versionCode": 1,
       "googleServicesFile": "./google-services.json",
-      "package": "com.whispa.app",
+      "package": "com.saidovery.whispame",
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ]

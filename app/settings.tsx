@@ -6,9 +6,8 @@ import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Modal, Pressable, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Linking, Modal, Pressable, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 export default function SettingsScreen() {
     const insets = useSafeAreaInsets();
     const { signOut } = useClerk();
@@ -157,7 +156,16 @@ export default function SettingsScreen() {
                 {saving && <ActivityIndicator size="small" color="#1DB954" />}
             </View>
 
-            <View className="px-6 mt-4 gap-3">
+            <ScrollView
+                className="flex-1"
+                contentContainerStyle={{
+                    paddingHorizontal: 24,
+                    paddingTop: 16,
+                    paddingBottom: insets.bottom + 30,
+                    rowGap: 12,
+                }}
+                showsVerticalScrollIndicator={false}
+            >
 
                 {/* Language */}
                 <TouchableOpacity
@@ -184,6 +192,7 @@ export default function SettingsScreen() {
                     </View>
                     <Ionicons name="chevron-forward" size={18} color="#555" />
                 </TouchableOpacity>
+
 
                 {/* Edit Bio */}
                 <TouchableOpacity
@@ -265,6 +274,34 @@ export default function SettingsScreen() {
                     <Text className="text-white font-semibold">{i18n.t("contactUs")}</Text>
                 </TouchableOpacity>
 
+                <TouchableOpacity
+                    className="flex-row items-center gap-3 bg-[#1a1a1a] border border-[#282828] rounded-2xl px-5 py-4"
+                    onPress={() =>
+                        Linking.openURL("https://doc-hosting.flycricket.io/whispa-privacy-policy/e20b60d9-e6ed-4e95-909f-93cd582ede47/privacy")
+                    }
+                >
+                    <View>
+                        <Text className="text-white font-semibold">Privacy Policy</Text>
+                        <Text className='text-sm mt-2 text-gray-400'>
+                            View how your data is collected and used
+                        </Text>
+                    </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    className="flex-row items-center gap-3 bg-[#1a1a1a] border border-[#282828] rounded-2xl px-5 py-4"
+                    onPress={() =>
+                        Linking.openURL("https://doc-hosting.flycricket.io/whispa-terms-of-use/6ba7661d-876d-406c-9514-2530ab0fa5c9/terms")
+                    }
+                >
+                    <View>
+                        <Text className="text-white font-semibold">Terms of Service</Text>
+                        <Text className='text-sm mt-2 text-gray-400'>
+                            Read the terms for using WhispaMe
+                        </Text>
+                    </View>
+                </TouchableOpacity>
+
                 {/* Sign Out */}
                 <TouchableOpacity
                     onPress={handleSignOut}
@@ -281,7 +318,7 @@ export default function SettingsScreen() {
                     </Text>
                 </View>
 
-            </View>
+            </ScrollView>
 
             {/* Contact Modal */}
             <Modal

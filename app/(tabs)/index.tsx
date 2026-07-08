@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+
+
 type Feedback = {
   _id: string;
   text: string;
