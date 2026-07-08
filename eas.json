@@ -8,7 +8,8 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EAS_BUILD_NPM_FLAGS": "--legacy-peer-deps"
+        "EAS_BUILD_NPM_FLAGS": "--legacy-peer-deps",
+        "APP_VARIANT": "development"
       }
     },
     "preview": {
@@ -17,7 +18,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EAS_BUILD_NPM_FLAGS": "--legacy-peer-deps"
+        "EAS_BUILD_NPM_FLAGS": "--legacy-peer-deps",
+        "APP_VARIANT": "production"
       }
     },
     "production": {}
